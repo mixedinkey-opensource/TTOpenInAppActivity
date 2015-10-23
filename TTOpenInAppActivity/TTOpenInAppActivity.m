@@ -180,20 +180,17 @@
     if(!sucess){
         // There is no app to handle this file
         NSString *deviceType = [UIDevice currentDevice].localizedModel;
+		NSString *title = NSLocalizedStringFromTableInBundle(@"No suitable App installed", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil);
         NSString *message = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Your %@ doesn't seem to have any other Apps installed that can open this document.", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil), deviceType];
 
         // Display alert
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"No suitable App installed", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil)
-                                                        message:message
-                                                       delegate:nil
-                                              cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil)
-                                              otherButtonTitles:nil];
-        [alert show];
-        
-        // Inform app that the activity has finished
-        // Return NO because the service was canceled and did not finish because of an error.
-        // http://developer.apple.com/library/ios/#documentation/uikit/reference/UIActivity_Class/Reference/Reference.html
-        [self activityDidFinish:NO];
+		UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+		[self.superViewController presentViewController:alert animated:YES completion:^{
+			// Inform app that the activity has finished
+			// Return NO because the service was canceled and did not finish because of an error.
+			// http://developer.apple.com/library/ios/#documentation/uikit/reference/UIActivity_Class/Reference/Reference.html
+			[self activityDidFinish:NO];
+		}];
     }
 }
 
