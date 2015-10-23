@@ -12,7 +12,7 @@
 #import <MobileCoreServices/MobileCoreServices.h> // For UTI
 #import <ImageIO/ImageIO.h>
 
-@interface TTOpenInAppActivity () <UIActionSheetDelegate>
+@interface TTOpenInAppActivity ()
 
 // Private attributes
 @property (nonatomic, strong) NSArray *fileURLs;
@@ -204,27 +204,26 @@
 
 - (void)openSelectFileActionSheet
 {
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Select a file", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil)
-                                                             delegate:self
-                                                    cancelButtonTitle:nil
-                                               destructiveButtonTitle:nil
-                                                    otherButtonTitles:nil];
-    
+	NSString *title = NSLocalizedStringFromTableInBundle(@"Select a file", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil);
+	UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+	
+	NSString *cancelTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil);
+	UIAlertAction *cancelAction =
+	[UIAlertAction actionWithTitle:cancelTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+		[self activityDidFinish:NO]; // Inform app that the activity has finished
+	}];
+	[actionSheet addAction:cancelAction];
+	
     for (NSURL *fileURL in self.fileURLs) {
-        [actionSheet addButtonWithTitle:[fileURL lastPathComponent]];
+		UIAlertAction *action = [UIAlertAction actionWithTitle:[fileURL lastPathComponent] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+			[self openDocumentInteractionControllerWithFileURL:fileURL];
+		}];
+		[actionSheet addAction:action];
     }
-    
-    actionSheet.cancelButtonIndex = [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"TTOpenInAppActivityLocalizable", [TTOpenInAppActivity bundle], nil)];
-
-    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone){
-        [actionSheet showFromRect:CGRectZero inView:self.superView animated:YES];
-    } else {
-        if(self.barButtonItem){
-            [actionSheet showFromBarButtonItem:self.barButtonItem animated:YES];
-        } else {
-            [actionSheet showFromRect:self.rect inView:self.superView animated:YES];
-        }
-    }
+	
+	actionSheet.modalPresentationStyle = UIModalPresentationPopover;
+	
+	[self.superViewController presentViewController:actionSheet animated:YES completion:nil];
 }
 
 #pragma mark - UIDocumentInteractionControllerDelegate
@@ -257,18 +256,6 @@
     
     // Inform app that the activity has finished
     [self activityDidFinish:YES];
-}
-
-#pragma mark - Action sheet delegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex != actionSheet.cancelButtonIndex) {
-        [self openDocumentInteractionControllerWithFileURL:self.fileURLs[buttonIndex]];
-    } else {
-	    // Inform app that the activity has finished
-	    [self activityDidFinish:NO];
-    }
 }
 
 #pragma mark - Image conversion
