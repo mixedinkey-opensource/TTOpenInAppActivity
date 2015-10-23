@@ -137,16 +137,8 @@
         }
     };
 
-    //  Check to see if it's presented via popover
-    if ([self.superViewController respondsToSelector:@selector(dismissPopoverAnimated:)]) {
-        [self.superViewController dismissPopoverAnimated:YES];
-        [((UIPopoverController *)self.superViewController).delegate popoverControllerDidDismissPopover:self.superViewController];
-        
-        presentOpenIn();
-    } else if([self.superViewController presentingViewController]) {    //  Not in popover, dismiss as if iPhone
-        [self.superViewController dismissViewControllerAnimated:YES completion:^(void){
-            presentOpenIn();
-        }];
+	if([self.superViewController presentingViewController]) {
+        [self.superViewController dismissViewControllerAnimated:YES completion:presentOpenIn];
     } else {
         presentOpenIn();
     }
